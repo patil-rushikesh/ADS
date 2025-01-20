@@ -26,11 +26,15 @@ private:
     TreeNode *buildUtil(int inStart, int inEnd, int &postIndex)
     {
         if (inStart > inEnd)
+        {
             return nullptr;
+        }
 
         TreeNode *node = new TreeNode(postOrder[postIndex--]);
         if (inStart == inEnd)
+        {
             return node;
+        }
 
         int inIndex = search(inOrder, inStart, inEnd, node->data);
         node->right = buildUtil(inIndex + 1, inEnd, postIndex);
@@ -85,7 +89,10 @@ public:
         deleteTree(node->right);
         delete node;
     }
-    ~Tree() { delete root; }
+    ~Tree()
+    {
+        delete root;
+    }
 };
 int main()
 {
