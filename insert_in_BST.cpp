@@ -1,5 +1,4 @@
 #include <iostream>
-#include <queue>
 using namespace std;
 
 class TreeNode
@@ -30,29 +29,20 @@ void Tree::InsertNode(int data)
         root = new TreeNode(data);
         return;
     }
-    queue<TreeNode *> q;
-    q.push(root);
-
-    while (!q.empty())
+    TreeNode *curr = root;
+    TreeNode *parent = nullptr;
+    while (curr != nullptr)
     {
-        TreeNode *curr = q.front();
-        q.pop();
-        if (curr->left != nullptr)
-            q.push(curr->left);
+        parent = curr;
+        if (data < curr->data)
+            curr = curr->left;
         else
-        {
-            curr->left = new TreeNode(data);
-            return;
-        }
-
-        if (curr->right != nullptr)
-            q.push(curr->right);
-        else
-        {
-            curr->right = new TreeNode(data);
-            return;
-        }
+            curr = curr->right;
     }
+    if (data < parent->data)
+        parent->left = new TreeNode(data);
+    else
+        parent->right = new TreeNode(data);
 }
 
 void Tree::inorder(TreeNode *curr)
@@ -68,11 +58,12 @@ int main()
 {
     Tree tree;
     tree.InsertNode(10);
+    tree.InsertNode(5);
+    tree.InsertNode(15);
+    tree.InsertNode(2);
+    tree.InsertNode(7);
+    tree.InsertNode(12);
     tree.InsertNode(20);
-    tree.InsertNode(30);
-    tree.InsertNode(40);
-    tree.InsertNode(50);
-    tree.InsertNode(60);
 
     cout << "Inorder Traversal: ";
     tree.inorder(tree.getRoot());
