@@ -1,5 +1,6 @@
+//This is a program which performs operation on threaded binary tree
+
 #include <iostream>
-#include <cstdlib>
 #define MAX_VALUE 65536
 using namespace std;
 class Node

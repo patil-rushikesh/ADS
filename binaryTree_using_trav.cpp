@@ -1,3 +1,5 @@
+//This is a program which creates a binary tree from Inorder and postorder traversals
+
 #include <iostream>
 #include <vector>
 using namespace std;

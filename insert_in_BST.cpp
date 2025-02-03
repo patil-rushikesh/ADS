@@ -1,3 +1,5 @@
+//A program to insert a data in binary search tree
+
 #include <iostream>
 using namespace std;
 
