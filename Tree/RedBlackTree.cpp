@@ -2,14 +2,14 @@
 #include<queue>
 using namespace std;
 
-struct Red_Black {
+struct treenode {
     int data;
-    Red_Black* left;
-    Red_Black* right;
+    treenode* left;
+    treenode* right;
     bool color; // true for Red, false for Black
-    Red_Black* parent;
+    treenode* parent;
 
-    Red_Black(int val) {
+    treenode(int val) {
         data = val;
         left = right = parent = NULL;
         color = true; // New nodes are always red initially
@@ -18,10 +18,10 @@ struct Red_Black {
 
 class RedBlackTree {
 private:
-    Red_Black* root;
+    treenode* root;
 
-    void rotateLeft(Red_Black* node) {
-        Red_Black* rightChild = node->right;
+    void rotateLeft(treenode* node) {
+        treenode* rightChild = node->right;
         node->right = rightChild->left;
         if (rightChild->left != NULL)
             rightChild->left->parent = node;
@@ -36,8 +36,8 @@ private:
         node->parent = rightChild;
     }
 
-    void rotateRight(Red_Black* node) {
-        Red_Black* leftChild = node->left;
+    void rotateRight(treenode* node) {
+        treenode* leftChild = node->left;
         node->left = leftChild->right;
         if (leftChild->right != NULL)
             leftChild->right->parent = node;
@@ -52,14 +52,14 @@ private:
         node->parent = leftChild;
     }
 
-void fixInsert(Red_Black* node) {
+void fixInsert(treenode* node) {
     while (node != root && node->parent->color == true) {
-        Red_Black* parent = node->parent;
-        Red_Black* grandparent = parent->parent;
+        treenode* parent = node->parent;
+        treenode* grandparent = parent->parent;
 
         // Case A: Parent is left child of grandparent
         if (parent == grandparent->left) {
-            Red_Black* uncle = grandparent->right;
+            treenode* uncle = grandparent->right;
 
             // Case 1: Uncle is red -> just recolor
             if (uncle != NULL && uncle->color == true) {
@@ -86,7 +86,7 @@ void fixInsert(Red_Black* node) {
 
         // Case B: Parent is right child of grandparent
         else {
-            Red_Black* uncle = grandparent->left;
+            treenode* uncle = grandparent->left;
 
             // Case 1: Uncle is red -> just recolor
             if (uncle != NULL && uncle->color == true) {
@@ -116,7 +116,7 @@ void fixInsert(Red_Black* node) {
 }
 
 
-    void transplant(Red_Black* u, Red_Black* v) {
+    void transplant(treenode* u, treenode* v) {
         if (u->parent == NULL)
             root = v;
         else if (u == u->parent->left)
@@ -127,16 +127,16 @@ void fixInsert(Red_Black* node) {
             v->parent = u->parent;
     }
 
-    Red_Black* minimum(Red_Black* node) {
+    treenode* minimum(treenode* node) {
         while (node->left != NULL)
             node = node->left;
         return node;
     }
 
-    void fixDelete(Red_Black* x) {
+    void fixDelete(treenode* x) {
         while (x != root && (x == NULL || x->color == false)) {
             if (x == x->parent->left) {
-                Red_Black* sibling = x->parent->right;
+                treenode* sibling = x->parent->right;
                 if (sibling->color == true) {
                     sibling->color = false;
                     x->parent->color = true;
@@ -163,7 +163,7 @@ void fixInsert(Red_Black* node) {
                     x = root;
                 }
             } else {
-                Red_Black* sibling = x->parent->left;
+                treenode* sibling = x->parent->left;
                 if (sibling->color == true) {
                     sibling->color = false;
                     x->parent->color = true;
@@ -195,9 +195,9 @@ void fixInsert(Red_Black* node) {
             x->color = false;
     }
 
-    void deleteNode(Red_Black* node, int key) {
-        Red_Black* z = NULL;
-        Red_Black* x, *y;
+    void deleteNode(treenode* node, int key) {
+        treenode* z = NULL;
+        treenode* x, *y;
         
         while (node != NULL) {
             if (node->data == key) {
@@ -251,14 +251,14 @@ public:
     RedBlackTree() { root = NULL; }
 
     void insert(int data) {
-        Red_Black* node = new Red_Black(data);
+        treenode* node = new treenode(data);
         if (root == NULL) {
             root = node;
             root->color = false;
             return;
         }
-        Red_Black* temp = root;
-        Red_Black* parent = NULL;
+        treenode* temp = root;
+        treenode* parent = NULL;
         while (temp != NULL) {
             parent = temp;
             if (node->data < temp->data)
@@ -294,10 +294,10 @@ public:
             cout << "Tree is empty!\n";
             return;
         }
-        queue<Red_Black*> q;
+        queue<treenode*> q;
         q.push(root);
         while (!q.empty()) {
-            Red_Black* temp = q.front();
+            treenode* temp = q.front();
             q.pop();
             cout << temp->data << (temp->color ? "(R) " : "(B) ");
             if (temp->left != NULL) q.push(temp->left);
