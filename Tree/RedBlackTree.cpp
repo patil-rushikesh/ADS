@@ -52,44 +52,69 @@ private:
         node->parent = leftChild;
     }
 
-    void fixInsert(Red_Black* node) {
-        while (node != root && node->parent != NULL && node->parent->color == true) {
-            if (node->parent == node->parent->parent->left) {
-                Red_Black* uncle = node->parent->parent->right;
-                if (uncle != NULL && uncle->color == true) {
-                    node->parent->color = false;
-                    uncle->color = false;
-                    node->parent->parent->color = true;
-                    node = node->parent->parent;
-                } else {
-                    if (node == node->parent->right) {
-                        node = node->parent;
-                        rotateLeft(node);
-                    }
-                    node->parent->color = false;
-                    node->parent->parent->color = true;
-                    rotateRight(node->parent->parent);
+void fixInsert(Red_Black* node) {
+    while (node != root && node->parent->color == true) {
+        Red_Black* parent = node->parent;
+        Red_Black* grandparent = parent->parent;
+
+        // Case A: Parent is left child of grandparent
+        if (parent == grandparent->left) {
+            Red_Black* uncle = grandparent->right;
+
+            // Case 1: Uncle is red -> just recolor
+            if (uncle != NULL && uncle->color == true) {
+                parent->color = false;
+                uncle->color = false;
+                grandparent->color = true;
+                node = grandparent; // Move up to fix violations up the tree
+            }
+            else {
+                // Case 2: Node is right child -> rotate left on parent
+                if (node == parent->right) {
+                    node = parent;
+                    rotateLeft(node);
+                    parent = node->parent;
+                    grandparent = parent->parent;
                 }
-            } else {
-                Red_Black* uncle = node->parent->parent->left;
-                if (uncle != NULL && uncle->color == true) {
-                    node->parent->color = false;
-                    uncle->color = false;
-                    node->parent->parent->color = true;
-                    node = node->parent->parent;
-                } else {
-                    if (node == node->parent->left) {
-                        node = node->parent;
-                        rotateRight(node);
-                    }
-                    node->parent->color = false;
-                    node->parent->parent->color = true;
-                    rotateLeft(node->parent->parent);
-                }
+
+                // Case 3: Node is left child -> rotate right on grandparent
+                parent->color = false;
+                grandparent->color = true;
+                rotateRight(grandparent);
             }
         }
-        root->color = false;
+
+        // Case B: Parent is right child of grandparent
+        else {
+            Red_Black* uncle = grandparent->left;
+
+            // Case 1: Uncle is red -> just recolor
+            if (uncle != NULL && uncle->color == true) {
+                parent->color = false;
+                uncle->color = false;
+                grandparent->color = true;
+                node = grandparent;
+            }
+            else {
+                // Case 2: Node is left child -> rotate right on parent
+                if (node == parent->left) {
+                    node = parent;
+                    rotateRight(node);
+                    parent = node->parent;
+                    grandparent = parent->parent;
+                }
+
+                // Case 3: Node is right child -> rotate left on grandparent
+                parent->color = false;
+                grandparent->color = true;
+                rotateLeft(grandparent);
+            }
+        }
     }
+
+    root->color = false; // Root must always be black
+}
+
 
     void transplant(Red_Black* u, Red_Black* v) {
         if (u->parent == NULL)
