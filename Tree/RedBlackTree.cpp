@@ -1,324 +1,314 @@
-#include <iostream>
+#include<iostream>
+#include<queue>
 using namespace std;
 
-enum Color { RED, BLACK };
+struct Red_Black {
+    int data;
+    Red_Black* left;
+    Red_Black* right;
+    bool color; // true for Red, false for Black
+    Red_Black* parent;
 
-class Node {
-public:
-    int value;
-    Node* left;
-    Node* right;
-    Node* parent;
-    Color color;
-
-    Node(int value) {
-        this->value = value;
-        left = right = parent = nullptr;
-        color = RED;
+    Red_Black(int val) {
+        data = val;
+        left = right = parent = NULL;
+        color = true; // New nodes are always red initially
     }
 };
 
 class RedBlackTree {
 private:
-    Node* root;
-    Node* TNULL;
+    Red_Black* root;
 
-    void leftRotate(Node* node) {
-        Node* rightChild = node->right;
+    void rotateLeft(Red_Black* node) {
+        Red_Black* rightChild = node->right;
         node->right = rightChild->left;
-        if (rightChild->left != TNULL) {
+        if (rightChild->left != NULL)
             rightChild->left->parent = node;
-        }
         rightChild->parent = node->parent;
-        if (node->parent == nullptr) {
+        if (node->parent == NULL)
             root = rightChild;
-        } else if (node == node->parent->left) {
+        else if (node == node->parent->left)
             node->parent->left = rightChild;
-        } else {
+        else
             node->parent->right = rightChild;
-        }
         rightChild->left = node;
         node->parent = rightChild;
     }
 
-    void rightRotate(Node* node) {
-        Node* leftChild = node->left;
+    void rotateRight(Red_Black* node) {
+        Red_Black* leftChild = node->left;
         node->left = leftChild->right;
-        if (leftChild->right != TNULL) {
+        if (leftChild->right != NULL)
             leftChild->right->parent = node;
-        }
         leftChild->parent = node->parent;
-        if (node->parent == nullptr) {
+        if (node->parent == NULL)
             root = leftChild;
-        } else if (node == node->parent->right) {
+        else if (node == node->parent->right)
             node->parent->right = leftChild;
-        } else {
+        else
             node->parent->left = leftChild;
-        }
         leftChild->right = node;
         node->parent = leftChild;
     }
 
-    void fixInsert(Node* node) {
-        Node* uncle;
-        while (node->parent->color == RED) {
-            if (node->parent == node->parent->parent->right) {
-                uncle = node->parent->parent->left;
-                if (uncle->color == RED) {
-                    uncle->color = BLACK;
-                    node->parent->color = BLACK;
-                    node->parent->parent->color = RED;
-                    node = node->parent->parent;
-                } else {
-                    if (node == node->parent->left) {
-                        node = node->parent;
-                        rightRotate(node);
-                    }
-                    node->parent->color = BLACK;
-                    node->parent->parent->color = RED;
-                    leftRotate(node->parent->parent);
-                }
-            } else {
-                uncle = node->parent->parent->right;
-                if (uncle->color == RED) {
-                    uncle->color = BLACK;
-                    node->parent->color = BLACK;
-                    node->parent->parent->color = RED;
+    void fixInsert(Red_Black* node) {
+        while (node != root && node->parent != NULL && node->parent->color == true) {
+            if (node->parent == node->parent->parent->left) {
+                Red_Black* uncle = node->parent->parent->right;
+                if (uncle != NULL && uncle->color == true) {
+                    node->parent->color = false;
+                    uncle->color = false;
+                    node->parent->parent->color = true;
                     node = node->parent->parent;
                 } else {
                     if (node == node->parent->right) {
                         node = node->parent;
-                        leftRotate(node);
+                        rotateLeft(node);
                     }
-                    node->parent->color = BLACK;
-                    node->parent->parent->color = RED;
-                    rightRotate(node->parent->parent);
+                    node->parent->color = false;
+                    node->parent->parent->color = true;
+                    rotateRight(node->parent->parent);
+                }
+            } else {
+                Red_Black* uncle = node->parent->parent->left;
+                if (uncle != NULL && uncle->color == true) {
+                    node->parent->color = false;
+                    uncle->color = false;
+                    node->parent->parent->color = true;
+                    node = node->parent->parent;
+                } else {
+                    if (node == node->parent->left) {
+                        node = node->parent;
+                        rotateRight(node);
+                    }
+                    node->parent->color = false;
+                    node->parent->parent->color = true;
+                    rotateLeft(node->parent->parent);
                 }
             }
-            if (node == root) {
-                break;
-            }
         }
-        root->color = BLACK;
+        root->color = false;
     }
 
-    void insertNode(int value) {
-        Node* newNode = new Node(value);
-        Node* parent = nullptr;
-        Node* currentNode = root;
-
-        while (currentNode != TNULL) {
-            parent = currentNode;
-            if (newNode->value < currentNode->value) {
-                currentNode = currentNode->left;
-            } else {
-                currentNode = currentNode->right;
-            }
-        }
-
-        newNode->parent = parent;
-        if (parent == nullptr) {
-            root = newNode;
-        } else if (newNode->value < parent->value) {
-            parent->left = newNode;
-        } else {
-            parent->right = newNode;
-        }
-
-        newNode->left = TNULL;
-        newNode->right = TNULL;
-        newNode->color = RED;
-
-        fixInsert(newNode);
+    void transplant(Red_Black* u, Red_Black* v) {
+        if (u->parent == NULL)
+            root = v;
+        else if (u == u->parent->left)
+            u->parent->left = v;
+        else
+            u->parent->right = v;
+        if (v != NULL)
+            v->parent = u->parent;
     }
 
-    void inorderHelper(Node* node) {
-        if (node != TNULL) {
-            inorderHelper(node->left);
-            cout << node->value << " ";
-            inorderHelper(node->right);
-        }
-    }
-
-    Node* minimum(Node* node) {
-        while (node->left != TNULL) {
+    Red_Black* minimum(Red_Black* node) {
+        while (node->left != NULL)
             node = node->left;
-        }
         return node;
     }
 
-    void transplant(Node* u, Node* v) {
-        if (u->parent == nullptr) {
-            root = v;
-        } else if (u == u->parent->left) {
-            u->parent->left = v;
-        } else {
-            u->parent->right = v;
-        }
-        v->parent = u->parent;
-    }
-
-    void fixDelete(Node* node) {
-        Node* sibling;
-        while (node != root && node->color == BLACK) {
-            if (node == node->parent->left) {
-                sibling = node->parent->right;
-                if (sibling->color == RED) {
-                    sibling->color = BLACK;
-                    node->parent->color = RED;
-                    leftRotate(node->parent);
-                    sibling = node->parent->right;
+    void fixDelete(Red_Black* x) {
+        while (x != root && (x == NULL || x->color == false)) {
+            if (x == x->parent->left) {
+                Red_Black* sibling = x->parent->right;
+                if (sibling->color == true) {
+                    sibling->color = false;
+                    x->parent->color = true;
+                    rotateLeft(x->parent);
+                    sibling = x->parent->right;
                 }
-                if (sibling->left->color == BLACK && sibling->right->color == BLACK) {
-                    sibling->color = RED;
-                    node = node->parent;
+                if ((sibling->left == NULL || sibling->left->color == false) &&
+                    (sibling->right == NULL || sibling->right->color == false)) {
+                    sibling->color = true;
+                    x = x->parent;
                 } else {
-                    if (sibling->right->color == BLACK) {
-                        sibling->left->color = BLACK;
-                        sibling->color = RED;
-                        rightRotate(sibling);
-                        sibling = node->parent->right;
+                    if (sibling->right == NULL || sibling->right->color == false) {
+                        if (sibling->left != NULL)
+                            sibling->left->color = false;
+                        sibling->color = true;
+                        rotateRight(sibling);
+                        sibling = x->parent->right;
                     }
-                    sibling->color = node->parent->color;
-                    node->parent->color = BLACK;
-                    sibling->right->color = BLACK;
-                    leftRotate(node->parent);
-                    node = root;
+                    sibling->color = x->parent->color;
+                    x->parent->color = false;
+                    if (sibling->right != NULL)
+                        sibling->right->color = false;
+                    rotateLeft(x->parent);
+                    x = root;
                 }
             } else {
-                sibling = node->parent->left;
-                if (sibling->color == RED) {
-                    sibling->color = BLACK;
-                    node->parent->color = RED;
-                    rightRotate(node->parent);
-                    sibling = node->parent->left;
+                Red_Black* sibling = x->parent->left;
+                if (sibling->color == true) {
+                    sibling->color = false;
+                    x->parent->color = true;
+                    rotateRight(x->parent);
+                    sibling = x->parent->left;
                 }
-                if (sibling->left->color == BLACK && sibling->right->color == BLACK) {
-                    sibling->color = RED;
-                    node = node->parent;
+                if ((sibling->right == NULL || sibling->right->color == false) &&
+                    (sibling->left == NULL || sibling->left->color == false)) {
+                    sibling->color = true;
+                    x = x->parent;
                 } else {
-                    if (sibling->left->color == BLACK) {
-                        sibling->right->color = BLACK;
-                        sibling->color = RED;
-                        leftRotate(sibling);
-                        sibling = node->parent->left;
+                    if (sibling->left == NULL || sibling->left->color == false) {
+                        if (sibling->right != NULL)
+                            sibling->right->color = false;
+                        sibling->color = true;
+                        rotateLeft(sibling);
+                        sibling = x->parent->left;
                     }
-                    sibling->color = node->parent->color;
-                    node->parent->color = BLACK;
-                    sibling->left->color = BLACK;
-                    rightRotate(node->parent);
-                    node = root;
+                    sibling->color = x->parent->color;
+                    x->parent->color = false;
+                    if (sibling->left != NULL)
+                        sibling->left->color = false;
+                    rotateRight(x->parent);
+                    x = root;
                 }
             }
         }
-        node->color = BLACK;
+        if (x != NULL)
+            x->color = false;
     }
 
-    void deleteNodeHelper(Node* node, int value) {
-        Node* targetNode = TNULL;
-        Node* replaceNode, * temp;
-        while (node != TNULL) {
-            if (node->value == value) {
-                targetNode = node;
+    void deleteNode(Red_Black* node, int key) {
+        Red_Black* z = NULL;
+        Red_Black* x, *y;
+        
+        while (node != NULL) {
+            if (node->data == key) {
+                z = node;
+                break;
             }
-            if (node->value <= value) {
-                node = node->right;
-            } else {
+            if (key < node->data)
                 node = node->left;
-            }
+            else
+                node = node->right;
         }
 
-        if (targetNode == TNULL) {
-            cout << "Key not found\n";
+        if (z == NULL) {
+            cout << "Key not found in the tree\n";
             return;
         }
 
-        temp = targetNode;
-        Color originalColor = temp->color;
-        if (targetNode->left == TNULL) {
-            replaceNode = targetNode->right;
-            transplant(targetNode, targetNode->right);
-        } else if (targetNode->right == TNULL) {
-            replaceNode = targetNode->left;
-            transplant(targetNode, targetNode->left);
+        y = z;
+        bool y_original_color = y->color;
+        if (z->left == NULL) {
+            x = z->right;
+            transplant(z, z->right);
+        } else if (z->right == NULL) {
+            x = z->left;
+            transplant(z, z->left);
         } else {
-            temp = minimum(targetNode->right);
-            originalColor = temp->color;
-            replaceNode = temp->right;
-            if (temp->parent == targetNode) {
-                replaceNode->parent = temp;
+            y = minimum(z->right);
+            y_original_color = y->color;
+            x = y->right;
+            if (y->parent == z) {
+                if (x != NULL)
+                    x->parent = y;
             } else {
-                transplant(temp, temp->right);
-                temp->right = targetNode->right;
-                temp->right->parent = temp;
+                transplant(y, y->right);
+                y->right = z->right;
+                if (y->right != NULL)
+                    y->right->parent = y;
             }
-            transplant(targetNode, temp);
-            temp->left = targetNode->left;
-            temp->left->parent = temp;
-            temp->color = targetNode->color;
+            transplant(z, y);
+            y->left = z->left;
+            if (y->left != NULL)
+                y->left->parent = y;
+            y->color = z->color;
         }
-        if (originalColor == BLACK) {
-            fixDelete(replaceNode);
-        }
+        delete z;
+        if (y_original_color == false)
+            fixDelete(x);
     }
 
 public:
-    RedBlackTree() {
-        TNULL = new Node(0);
-        TNULL->color = BLACK;
-        root = TNULL;
+    RedBlackTree() { root = NULL; }
+
+    void insert(int data) {
+        Red_Black* node = new Red_Black(data);
+        if (root == NULL) {
+            root = node;
+            root->color = false;
+            return;
+        }
+        Red_Black* temp = root;
+        Red_Black* parent = NULL;
+        while (temp != NULL) {
+            parent = temp;
+            if (node->data < temp->data)
+                temp = temp->left;
+            else
+                temp = temp->right;
+        }
+        node->parent = parent;
+        if (node->data < parent->data)
+            parent->left = node;
+        else
+            parent->right = node;
+        fixInsert(node);
     }
 
-    void insert(int value) {
-        insertNode(value);
+    void insertMultiple() {
+        int count, value;
+        cout << "How many values to insert? ";
+        cin >> count;
+        cout << "Enter " << count << " values separated by space: ";
+        for (int i = 0; i < count; i++) {
+            cin >> value;
+            insert(value);
+        }
     }
 
-    void deleteNode(int value) {
-        deleteNodeHelper(root, value);
+    void remove(int data) {
+        deleteNode(root, data);
     }
 
-    void inorder() {
-        inorderHelper(root);
+    void levelOrderDisplay() {
+        if (root == NULL) {
+            cout << "Tree is empty!\n";
+            return;
+        }
+        queue<Red_Black*> q;
+        q.push(root);
+        while (!q.empty()) {
+            Red_Black* temp = q.front();
+            q.pop();
+            cout << temp->data << (temp->color ? "(R) " : "(B) ");
+            if (temp->left != NULL) q.push(temp->left);
+            if (temp->right != NULL) q.push(temp->right);
+        }
+        cout << endl;
     }
 };
 
 int main() {
     RedBlackTree tree;
-    int choice, value;
-
-    do {
-        cout << "\n========== Red-Black Tree Menu ==========\n";
-        cout << "1. Insert Node\n";
-        cout << "2. Delete Node\n";
-        cout << "3. Display Tree (Inorder Traversal)\n";
-        cout << "0. Exit\n";
-        cout << "=========================================\n";
-        cout << "Enter your choice: ";
+    int choice, data;
+    while (true) {
+        cout << "\n1. Insert\n2. Insert Multiple\n3. Level Order Display\n4. Delete\n5. Exit\nEnter choice: ";
         cin >> choice;
-
         switch (choice) {
-        case 1:
-            cout << "Enter value to insert: ";
-            cin >> value;
-            tree.insert(value);
-            break;
-        case 2:
-            cout << "Enter value to delete: ";
-            cin >> value;
-            tree.deleteNode(value);
-            break;
-        case 3:
-            cout << "Inorder Traversal: ";
-            tree.inorder();
-            cout << endl;
-            break;
-        case 0:
-            cout << "Exiting...\n";
-            break;
-        default:
-            cout << "Invalid choice!\n";
+            case 1:
+                cout << "Enter data: ";
+                cin >> data;
+                tree.insert(data);
+                break;
+            case 2:
+                tree.insertMultiple();
+                break;
+            case 3:
+                tree.levelOrderDisplay();
+                break;
+            case 4:
+                cout << "Enter data to delete: ";
+                cin >> data;
+                tree.remove(data);
+                break;
+            case 5:
+                return 0;
+            default:
+                cout << "Invalid choice!\n";
         }
-    } while (choice != 0);
-
-    return 0;
+    }
 }
